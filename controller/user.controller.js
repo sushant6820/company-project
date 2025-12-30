@@ -30,3 +30,28 @@ export const register = async (req, res) => {
     return res.status(400).json({ message: "Internal server error" });
   }
 };
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "invalid credentails" });
+    }
+
+    const isMatch = bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "password incorrect" });
+    }
+
+    const token = jwt.sign({ id: user._id }, jwt_secret);
+
+    return res.json(token);
+  } catch (error) {
+    console.log("Login error : ", error);
+    return res.status(500).json({ message: "internal server error" });
+  }
+};
